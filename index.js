@@ -1,6 +1,6 @@
 const contract = require('truffle-contract')
 const Web3 = require('web3')
-const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+const provider = new Web3.providers.HttpProvider('http://localhost:7545')
 const web3 = new Web3(provider)
 
 const VerifierArtifact = require('./build/contracts/Verifier')
@@ -29,7 +29,8 @@ signature = signature.substr(2);
 const r = '0x' + signature.slice(0, 64)
 const s = '0x' + signature.slice(64, 128)
 const v = '0x' + signature.slice(128, 130)
-const v_decimal = web3.toDecimal(v)
+let v_decimal = web3.toDecimal(v)
+if (v_decimal != 27 && v_decimal != 28) v_decimal += 27;
 
 console.log(`r -----------> ${r}`)
 console.log(`s -----------> ${s}`)
@@ -41,7 +42,8 @@ Verifier
   .then(instance => {
     const fixed_msg = `\x19Ethereum Signed Message:\n${msg.length}${msg}`
     const fixed_msg_sha = web3.sha3(fixed_msg)
-    return instance.recoverAddr.call(
+    return instance.isSigned.call(
+      addr,
       fixed_msg_sha,
       v_decimal,
       r,
